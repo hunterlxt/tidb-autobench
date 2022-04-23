@@ -10,21 +10,14 @@
 * **deploy-prepare**: 部署 TiDB 集群并灌入预热数据集，最后进行物理文件备份。导入数据前务必查看编辑默认的 prepare-core.sh 文件，使生成的数据集尺寸符合你的需要。根据是否开启 haproxy 注意端口配置
 * **run-bench**: 运行一系列的性能测试，运行前务必查看编辑默认的 bench-core.sh 文件，暂时支持自定义每轮测试时间，tikv 文件，tikv 配置，可以参照已有的命令自定义参数。运行结果在 targets 目录。暂时仅支持 mvcc 模式
 
-
-
-
-
 # tidb-autobench English Version
 
-A set of tools that simplifies TiDB's circular Bench. You can directly execute subcommands to view their specific usage methods.
+A set of tools that simplifies TiDB's circular Bench. You can directly execute subcommands to view their specific usage methods. It is recommended to run in the following order.
 
 ## Subcommand overview
-* **install-tools**: Install the pre-installed software required by other subcommands, such as tiup, haproxy, etc.
-* **create-fs**: Mount the file system to the specified directory on the target machine easily
-* **config-ssh**: Use this tool to easily configure to achieve password-free ssh from the central control machine to all machines
-* **run-haproxy**: start the haproxy service in the background of the execution machine
-* **deploy-prepare**: Deploy the TiDB cluster and fill in the pre-warmed data set, and finally perform physical file backup. Before importing data, be sure to review and edit the default prepare-core.sh file to make the size of the generated dataset meet your needs.
-* **run-bench**: Run a series of performance tests. Be sure to check and edit the default bench-core.sh file before running. It temporarily supports customizing each round of test time, tikv file, and tikv configuration. Bench result is placed in targets dir.
-
-## run-bench command
-This command needs to edit the bench-core.sh file, you can refer to the existing command to customize the parameters, temporarily only support mvcc mode.
+* **config-ssh**: Use this tool to easily configure to achieve password-free ssh from the central control machine to all machines, and you can also complete the ssh password-free operation by yourself
+* **install-tools**: Install pre-installed software required by other subcommands, such as tiup, haproxy, etc.
+* **create-fs**: Conveniently mount the file system to the specified directory on the target machine, you can do it without this tool, but when configuring the directory yourself, pay attention to always write the data to /tidb-autobench
+* **run-haproxy**: Start the haproxy service in the background of the execution machine, suitable for deploying multiple tidb-servers
+* **deploy-prepare**: Deploy the TiDB cluster and inject the pre-warmed data set, and finally perform physical file backup. Before importing data, be sure to review and edit the default prepare-core.sh file to make the size of the generated dataset meet your needs. Pay attention to the port configuration according to whether haproxy is turned on
+* **run-bench**: Run a series of performance tests. Be sure to check and edit the default bench-core.sh file before running. It temporarily supports customizing each round of test time, tikv file, and tikv configuration. You can refer to the existing ones. Command custom parameters. The result of the operation is in the targets directory. Temporarily only supports mvcc mode
