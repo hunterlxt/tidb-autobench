@@ -26,7 +26,7 @@ else if [ ${1} = "config-ssh" ]; then
     ./scripts/config_ssh_for_cluster.sh $2 $3 $4 $5
 else if [ ${1} = "run-haproxy" ]; then
     if [ $# != 3 ]; then
-        echo "run haproxy in background; usage: run-haproxy <mysql_port> <tidb_ip_ports(comma)>"
+        echo "run haproxy in background; usage: run-haproxy <mysql_port> <tidb_ip_ports(comma,eg:127.0.0.1:10000)>"
         exit 1
     fi
     ./scripts/run_haproxy.sh $2 $3
@@ -44,7 +44,7 @@ else if [ ${1} = "run-bench" ]; then
     ./scripts/run_bench.sh $2 $3 $4 $5 $6 $7
 else if [ ${1} = "install-tools" ]; then
     if [ $# != 2 ]; then
-        echo "install essential tools; usage: deploy-prepare <apt/yum>"
+        echo "install essential tools; usage: install-tools <apt/yum>"
         exit 1
     fi
     ./scripts/install_tools.sh $2
