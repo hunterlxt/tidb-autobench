@@ -1,7 +1,6 @@
 #!/bin/bash
 
-port=${1}
-tidbs=${2}
+tidbs=${1}
 
 function get_node_config {
     echo "   server tidb-${2} ${1}"
@@ -23,7 +22,7 @@ echo "global
    nbthread    64 
 
 listen tidb-cluster                        
-   bind 0.0.0.0:${port}
+   bind 0.0.0.0:11000
    retries 10000                        
    timeout connect  300000s                     
    timeout client 300000s                   

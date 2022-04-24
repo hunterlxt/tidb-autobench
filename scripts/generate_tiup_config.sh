@@ -22,7 +22,7 @@ function generate() {
 mkdir -p targets
 
 echo "global:
-  user: "${name}"
+  user: "${user}"
   ssh_port: 22
   deploy_dir: "/tidb-autobench/deploy"
   data_dir: "/tidb-autobench/data"
@@ -30,14 +30,14 @@ monitored:
   node_exporter_port: 10004
   blackbox_exporter_port: 10005
 pd_servers:
-  - host: ${1}
+  - host: $pd
     client_port: 10002
     peer_port: 10003
 monitoring_servers:
-  - host: ${1}
+  - host: $pd
     port: 10011
 grafana_servers:
-  - host: ${1}
+  - host: $pd
     port: 10010" > targets/config.yaml
 
 tidb_args=`echo ${tidbs} | awk -F ',' '{for(i=1;i<=NF;i++) {

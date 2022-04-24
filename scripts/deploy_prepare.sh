@@ -8,54 +8,53 @@ pd=${3}
 tidbs=${4}
 tikvs=${5}
 backup_dir=${6}
-port=${7}
-bench_mode=${8}
 
-./scripts/generate_tiup_config.sh
+tikv_args=`echo ${tikvs} | awk -F ',' '{for(i=1;i<=NF;i++) {
+    print $i
+}}'`
+function ssh_tikvs_to_backup() {
+    for ip in $*
+    do
+        echo "tikv $ip backup ..."
+        ssh ${user}@${ip} "sudo mkdir -p $backup_dir && sudo rm -rf $backup_dir && sudo mkdir -p $backup_dir && sudo cp -r /tidb-autobench/data/tikv-10000 $backup_dir" &
+    done
+}
 
-tiup cluster deploy test $ver targets/config.yaml --user $user -y
+./scripts/generate_tiup_config.sh $user $pd $tidbs $tikvs
+
+tiup cluster deploy test $ver targets/config.yaml --user $user --ssh system -y
 tiup cluster start test
 sleep 5
 
 # Set custom SQL variable
 mysql -u root -h 127.0.0.1 -P 11000 -e "set @@global.tidb_enable_clustered_index = ON"
 
-if [ $bench_mode = "tpcc" ];then
-    tiup bench tpcc --port 11000 --warehouses 1200 -T 400 prepare
-fi
+./custom-prepare.sh
+
+echo "data prepare finish"
+sleep 720
 
 
+echo "pd $pd backup ..."
+tiup cluster stop test -R tidb,pd,tikv -y
+sudo mkdir -p $backup_dir
+sudo rm -rf $backup_dir
+sudo mkdir -p $backup_dir
+sudo cp -r /tidb-autobench/data/pd-10002 $backup_dir
 
-
-/home/${name}/.go-tpc/bin/go-tpc tpcc -P 11000 -T 100 --warehouses 3000 prepare
-echo "prepare finish"
-sleep 600
-echo "pd prepare ..."
-tiup cluster stop test -y
-
-sleep 60
-
-tiup cluster stop test -y
-
-sudo mkdir -p /tidb-copy/
-sudo rm -rf /tidb-copy/
-sudo mkdir -p /tidb-copy/
-sudo cp -r /tidb-bench/data/pd-10002 /tidb-copy/
-
-echo "tikv prepare ..."
-ssh ${name}@${ip1} "sudo mkdir -p /tidb-bench/copy && sudo rm -rf /tidb-bench/copy && sudo mkdir -p /tidb-bench/copy && sudo cp -r /tidb-bench/data/tikv-10004 /tidb-bench/copy" &
-ssh ${name}@${ip2} "sudo mkdir -p /tidb-bench/copy && sudo rm -rf /tidb-bench/copy && sudo mkdir -p /tidb-bench/copy && sudo cp -r /tidb-bench/data/tikv-10004 /tidb-bench/copy" &
-ssh ${name}@${ip3} "sudo mkdir -p /tidb-bench/copy && sudo rm -rf /tidb-bench/copy && sudo mkdir -p /tidb-bench/copy && sudo cp -r /tidb-bench/data/tikv-10004 /tidb-bench/copy" &
-echo "tikv prepare done"
+ssh_tikvs_to_backup $tikv_args
 
 for pid in $(jobs -p)
 do
     wait $pid
+    mkdir -p logs
     if [ $? -eq 0 ]; then
-        echo "tpcc done" >> log.pre.tpcc
+        echo `date` >> logs/prepare.done.log
     else
-        echo "tpcc error" >> log.pre.tpcc
+        echo `date` >> logs/prepare.error.log
     fi
 done
 
 sleep 120
+
+echo "=== Finished ==="

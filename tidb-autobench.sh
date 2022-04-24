@@ -6,7 +6,7 @@ if [ $# = 0 ]; then
 
 create-fs config-ssh run-haproxy deploy-prepare run-bench install-tools
 
-FYI: https://github.com/hunterlxt/tidb-bench-bot"  >&2
+FYI: https://github.com/hunterlxt/tidb-autobench"  >&2
     exit 1
 fi
 
@@ -25,23 +25,23 @@ else if [ ${1} = "config-ssh" ]; then
     fi
     ./scripts/config_ssh_for_cluster.sh $2 $3 $4 $5
 else if [ ${1} = "run-haproxy" ]; then
-    if [ $# != 3 ]; then
-        echo "run haproxy in background; usage: run-haproxy <mysql_port> <tidb_ip_ports(comma,eg:127.0.0.1:10000)>"
+    if [ $# != 2 ]; then
+        echo "run haproxy in background; usage: run-haproxy <tidb_ip_ports(comma,eg:127.0.0.1:10000)>"
         exit 1
     fi
-    ./scripts/run_haproxy.sh $2 $3
+    ./scripts/run_haproxy.sh $2
 else if [ ${1} = "deploy-prepare" ]; then
-    if [ $# != 9 ]; then
-        echo "deploy tidb cluster and prepare bench data; usage: deploy-prepare <user> <tidb_version> <pd_ip> <tidb_ips(comma)> <tikv_ips(comma)> <backup_dir> <mysql_port>"
+    if [ $# != 7 ]; then
+        echo "deploy tidb cluster and prepare bench data; usage: deploy-prepare <user> <tidb_version> <pd_ip> <tidb_ips(comma)> <tikv_ips(comma)> <backup_dir>"
         exit 1
     fi
     ./scripts/deploy_prepare.sh $2 $3 $4 $5 $6 $7
 else if [ ${1} = "run-bench" ]; then
-    if [ $# != 7 ]; then
-        echo "run loop bench; usage: run-bench <user> <mysql_port> <tikv_ips(comma)> <backup_dir> <tpcc/sysbench>"
+    if [ $# != 4 ]; then
+        echo "run loop bench; usage: run-bench <user> <backup_dir> <tikv_ips(comma)>"
         exit 1
     fi
-    ./scripts/run_bench.sh $2 $3 $4 $5 $6 $7
+    ./custom-run.sh $2 $3 $4
 else if [ ${1} = "install-tools" ]; then
     if [ $# != 2 ]; then
         echo "install essential tools; usage: install-tools <apt/yum>"
@@ -49,7 +49,7 @@ else if [ ${1} = "install-tools" ]; then
     fi
     ./scripts/install_tools.sh $2
 else
-    echo "Please input right sub-command. FYI: https://github.com/hunterlxt/tidb-bench-bot"  >&2
+    echo "Please input right sub-command. FYI: https://github.com/hunterlxt/tidb-autobench"  >&2
     exit 1
 fi
 fi

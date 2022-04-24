@@ -1,32 +1,40 @@
 #!/bin/bash
 set -eu
 
-name=${4}
-conf=${5}
-bin=${6}
+user=${1}
+conf=${2}
+bin=${3}
+backup_dir=${4}
+tikvs=${5}
 
-echo "scp ${conf} ..."
-scp ${conf} ${name}@${1}:/tidb-bench/deploy/tikv-10004/conf
-scp ${conf} ${name}@${2}:/tidb-bench/deploy/tikv-10004/conf
-scp ${conf} ${name}@${3}:/tidb-bench/deploy/tikv-10004/conf
-echo "scp ${bin} ..."
-scp ${bin} ${name}@${1}:/tidb-bench/deploy/tikv-10004/bin
-scp ${bin} ${name}@${2}:/tidb-bench/deploy/tikv-10004/bin
-scp ${bin} ${name}@${3}:/tidb-bench/deploy/tikv-10004/bin
+tikv_args=`echo ${tikvs} | awk -F ',' '{for(i=1;i<=NF;i++) {
+    print $i
+}}'`
+function scp_to_tikvs() {
+    for ip in $*
+    do
+        echo "tikv $ip scp ..."
+        scp ${conf} ${user}@${ip}:/tidb-autobench/deploy/tikv-10000/conf
+        scp ${bin} ${user}@${ip}:/tidb-autobench/deploy/tikv-10000/bin
+        echo "restore tikv $ip bench data ..."
+        ssh ${user}@${ip} "sudo rm -rf /tidb-autobench/data/tikv-10000 && sudo cp -r ${backup_dir}/tikv-10000 /tidb-autobench/data/ && sudo chmod -R 777 /tidb-autobench" &
+    done
+}
+
 echo "restore pd ..."
-sudo rm -rf /tidb-bench/data/pd-10002 && sudo cp -r /tidb-copy/pd-10002 /tidb-bench/data
-sudo chmod -R 777 /tidb-bench
-echo "restore tikv ..."
-ssh ${name}@${1} "sudo rm -rf /tidb-bench/data/tikv-10004 && sudo cp -r /tidb-bench/copy/tikv-10004 /tidb-bench/data/ && sudo chmod -R 777 /tidb-bench" &
-ssh ${name}@${2} "sudo rm -rf /tidb-bench/data/tikv-10004 && sudo cp -r /tidb-bench/copy/tikv-10004 /tidb-bench/data/ && sudo chmod -R 777 /tidb-bench" &
-ssh ${name}@${3} "sudo rm -rf /tidb-bench/data/tikv-10004 && sudo cp -r /tidb-bench/copy/tikv-10004 /tidb-bench/data/ && sudo chmod -R 777 /tidb-bench" &
+sudo rm -rf /tidb-autobench/data/pd-10002 && sudo cp -r ${backup_dir}/pd-10002 /tidb-autobench/data
+sudo chmod -R 777 /tidb-autobench
+echo "restore pd done"
+
+scp_to_tikvs $tikv_args
 
 for pid in $(jobs -p)
 do
     wait $pid
+    mkdir -p logs
     if [ $? -eq 0 ]; then
-        echo "re done" >> log.restore
+        echo `date` >> logs/restore.done.log
     else
-        echo "re error" >> log.restore
+        echo `date` >> logs/restore.error.log
     fi
 done

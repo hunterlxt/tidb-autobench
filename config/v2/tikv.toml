@@ -1,2 +1,15 @@
-[quota]
-foreground-write-bandwidth = "2.5MB"
+[server]
+grpc-concurrency = 5
+
+[raftstore]
+apply-max-batch-size = 512
+store-max-batch-size = 512
+
+[rocksdb.defaultcf]
+max-write-buffer-number = 10
+
+[rocksdb.writecf]
+max-write-buffer-number = 10
+
+[rocksdb.lockcf]
+max-write-buffer-number = 10

@@ -1,2 +1,11 @@
-[quota]
-foreground-write-bandwidth = "3MB"
+[server]
+grpc-concurrency = 3
+
+[rocksdb.defaultcf]
+max-write-buffer-number = 10
+
+[rocksdb.writecf]
+max-write-buffer-number = 10
+
+[rocksdb.lockcf]
+max-write-buffer-number = 10
